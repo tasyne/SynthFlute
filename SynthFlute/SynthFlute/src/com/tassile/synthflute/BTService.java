@@ -73,6 +73,12 @@ public class BTService {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
+    
+    
+    
+    
+    
+    
     /**
      * Constructor. Prepares a new BluetoothChat session.
      * @param context  The UI Activity Context
@@ -452,6 +458,7 @@ public class BTService {
         	// added smaller byte buffer, because why not? - Tas
         	// original implementation
             Log.i(TAG, "BEGIN mConnectedThread");
+            setPriority(Thread.MAX_PRIORITY);
             
             // other implmentation
             
@@ -470,6 +477,39 @@ public class BTService {
             // Keep listening to the InputStream while connected
             while (true) {
                 try {
+                	
+                	
+                    // Read from the InputStream
+                    //bytes = mmInStream.read(buffer);
+
+                	
+                    //wait until (space) NEW BUFFERING METHOD CODE CHANGE
+                    int bAvail = mmInStream.available();
+
+                    if (bAvail > 0){
+                    	byte[] packetBytes = new byte[bAvail];
+                    	mmInStream.read(packetBytes);
+                        for(int i=0; i<bAvail; i++){
+                        	byte b = packetBytes[i];
+                        	if(b == BUFFER_DELIMITER && beginFlag){
+                        		//byte[] encodedBytes = new byte[readBufferPosition];
+                        		encodedBytes = new byte[readBufferPosition];
+                        		System.arraycopy(buffer, 0, encodedBytes, 0, encodedBytes.length); //public static void arraycopy (Object src, int srcPos, Object dst, int dstPos, int length)
+                        		readBufferPosition = 0;
+                        		mHandler.obtainMessage(SynthFlute.MESSAGE_READ, readBufferPosition, -1, readBuffer).sendToTarget();
+                        		beginFlag = false;
+                        	} else if (b == BUFFER_BEGINLIMITER){
+                        		beginFlag = true;
+                        		//encodedBytes = new byte[readBufferPosition];
+                        		readBuffer = new byte[bSize]; //erase!
+                        	} else {
+                            	readBuffer[readBufferPosition++] = b;
+                            }
+                        }
+                    } 
+                    
+                    
+                	/*
                 	String message = "";
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
@@ -480,6 +520,8 @@ public class BTService {
                     	}
                     	message = message + new String(buffer, 0, bytes -1);
                     	Log.d(TAG, message);
+                    	mHandler.obtainMessage(SynthFlute.MESSAGE_READ, 0, -1, smallBuffer).sendToTarget();
+                    	*/
                     	/*
 	                    for(int i=0; i<buffer.length; i++){
 	                    	if(buffer[i] == BUFFER_DELIMITER && beginFlag){
@@ -496,7 +538,7 @@ public class BTService {
 	                    	Log.d(TAG, Character.toString((char) buffer[i]));
 	                  }
 	                    */
-                    }
+ //                   }
                     //mmSocket.getInputStream(); //p-sure we don't need this
                       
 

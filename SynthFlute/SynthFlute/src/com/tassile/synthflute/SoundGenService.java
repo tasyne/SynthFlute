@@ -130,15 +130,17 @@ class SoundGenService extends Thread{
 			    samples[i] = (short) (amp*Math.sin(ph));
 			    ph += twopi*fr/sr;
 		    }
+		    /*
 		    if(note+octave > 0){
 		    	Log.d(TAG, "note: " + note + " octave: " + octave);
 		    	Log.d(TAG, "freq: " + fr);
 		    }
+	    	*/
 		    audioTrack.write(samples, 0, buffsize);
 	    }
 	    audioTrack.stop();
 	    audioTrack.release();
-		Looper.loop();
+		//Looper.loop();
 	};
 	
 	public synchronized void play(int freq){
